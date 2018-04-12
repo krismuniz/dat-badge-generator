@@ -1,0 +1,163 @@
+<html>
+  <head>
+    <link rel="icon" href="./favicon.png" type="image/png">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+    <meta name="title" content="Dat Badge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+    <title>Dat Badge</title>
+    <style>
+      html {
+        font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+      }
+
+      body {
+        font-size: 14px;
+      }
+
+      :root {
+        --blue: #536DFE !important;
+      }
+
+      .container {
+        max-width: 512px;
+        padding: 64px 64px 32px 64px;
+      }
+
+      .btn.btn-primary {
+        border-radius: 32px;
+      }
+
+      .btn.btn-primary {
+        padding-left: 24px;
+        padding-right: 24px;
+      }
+
+      label {
+        line-height: 2rem;
+      }
+
+      .row {
+        margin: 8px;
+      }
+
+      .row .col-sm {
+        margin: 8px;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .code-block {
+        background-color: rgba(0,0,0,0.03);
+        padding: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container text-center">
+      <img class="mb-4" src="/favicon.ico" alt="Dat Badge" width="48" height="48">
+      <h1 class="h2 mb-2 font-weight-bold">Dat Badge</h1>
+      <h2 class="h4 mb-4 font-weight-normal text-muted">Add a Badge to your <a href="https://datproject.org/" target="_blank">Dat</a> project</a></h2>
+
+      <p id="meta-badge">
+        <img src="https://dat-badge.glitch.me/badge-krismuniz.hashbase.io/badge.svg">
+      </p>
+
+      <div class="row">
+        <div class="col-sm text-center">
+          <a href="/README.md">Readme</a>
+        </div>
+        <div class="col-sm text-center">
+          <a href="https://shields.io">Shields.io</a>
+        </div>
+        <div class="col-sm text-center">
+          <a disabled href="https://github.com/krismuniz/dat-badge-generator" target="_blank">GitHub</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div id="card-content" class="card-body">
+          <div class="card-title">Create a badge for your Dat project!</div>
+          <p class="text-sm text-muted">Paste any valid <code>dat://</code> link</p>
+          <label for="pathname-input" class="sr-only">Dat link</label>
+          <div class="input-group mb-4">
+            <input id="dat-link-input" type="text" class="form-control input-group-append" placeholder="dat://" required>
+            <div class="input-group-append">
+              <button id="select-archive-button" class="btn btn-outline-primary" type="button" disabled alt="Select an Archive">Browse</button>
+            </div>
+          </div>
+          <button id="generate-badge-button" class="btn btn-primary mb-4" type="submit">Generate Badge</button>
+          <p>Powered by <a href="https://shields.io">shields.io</a></p>
+        </div>
+      </div>
+      <p class="mt-4 text-muted"><a href="/LICENSE.md">MIT License</a> – <a href="dat://profile-krismuniz.hashbase.io/" target="_blank">Kristian Muñiz</a> Ⓒ 2018</p>
+    </div>
+    <script type="module" defer>
+      import element from '/modules/element.js'
+      import selectText from '/modules/select-text.js'
+      const $ = (s) => document.querySelector(s)
+
+      if (window.DatArchive) {
+        async function selectArchive () {
+          const target = await DatArchive.selectArchive({
+            title: 'Select a Dat Archive',
+            buttonLabel: 'Select'
+          })
+
+          $('#dat-link-input').value = target.url
+        }
+
+        $('#select-archive-button').addEventListener('click', selectArchive)
+        $('#select-archive-button').removeAttribute('disabled')
+      }
+
+      function generateBadge () {
+        const input = $('#dat-link-input').value
+
+        if (input && input !== '') {
+          const key = input.replace(new RegExp(/^dat:\/?\/?/i), '')
+          const badgeURL = `https://dat-badge.glitch.me/${key}/badge.svg`
+
+          const selectFirstChildText = function (e) {
+            selectText(e.target.children[0])
+          }
+
+          const selectInnerText = function (e) {
+            selectText(e.target)
+          }
+
+          $('#meta-badge').classList.add('hidden')
+          $('#card-content').innerHTML = ''
+          $('#card-content').appendChild(
+            element('div', [
+              element('p.text-sm', [
+                element('img', [], { src: badgeURL, alt: 'Dat' })
+              ]),
+              element('p.text-sm.text-muted', 'Copy the badge in any format and paste it in your README or website.'),
+              element('p.text-sm.font-weight-bold', 'Markdown Code:'),
+              element('pre.code-block.text-left', [
+                element('code', `![Dat](${badgeURL})`, { click: selectInnerText })
+              ], { click: selectFirstChildText }),
+              element('p.text-sm.font-weight-bold', 'HTML Code:'),
+              element('pre.code-block.text-left', [
+                element('code', `<img src="${badgeURL}" alt="Dat">`, { click: selectInnerText })
+              ], { click: selectFirstChildText }),
+              element('p.text-sm.font-weight-bold', 'Direct URL:'),
+              element('pre.code-block.text-left', [
+                element('code', badgeURL, { click: selectInnerText })
+              ], { click: selectFirstChildText }),
+              element('a', 'Back', { href: '/' })
+            ])
+          )
+        }
+      }
+
+      $('#generate-badge-button').addEventListener('click', generateBadge)
+    </script>
+  </body>
+</html>
